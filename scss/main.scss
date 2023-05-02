@@ -1,0 +1,13 @@
+$color--black: #000;
+$color--white: #fff;
+a {
+	cursor: pointer;
+}
+
+body {
+	background-color: $color--black;
+	color: $color--white;
+	a.highlight:hover{
+		background-color: aqua;
+	}
+}
