@@ -3,6 +3,57 @@ const json = require('./testdata.json');
 
 // HTML 요소와 배열 선언
 const myDiv = document.getElementById("myDiv");
+let clickTags = document.querySelectorAll('a.click-tag');
+
+//태그 검색 범위 설정
+const range = 15;
+
+function setClickTags(nowSentenceIndex){
+  clickTags = document.querySelectorAll('a.click-tag');
+
+  clickTags.forEach(clickTag => {
+    clickTag.addEventListener('click',
+      function(event) {
+        event.preventDefault(); // 이벤트의 기본 동작(페이지 이동)을 막음
+        const text = this.innerText.trim(); // 클릭된 요소 내부의 텍스트 추출 및 공백 제거
+        console.log(findObjectsWithTag(json, text, nowSentenceIndex, range)); // 추출한 텍스트 출력
+    });
+  });
+}
+
+function sliceIndex(nowIndex, indexRange, tagsGroup) {
+  const startIndex = nowIndex; // 추출할 객체의 시작 인덱스
+  const endIndex = startIndex + indexRange; // 시작 인덱스 + 범위 수
+  const objectsInRange = tagsGroup.slice(startIndex, endIndex);
+  console.log(objectsInRange);
+}
+
+// json 파일에서 tag를 인자로 받아 포함한 객체들을 반환.
+function findObjectsWithTag(jsonObject, tagToFind, nowOrder, range) {
+  let orderRange = nowOrder + range - 1;
+  const objectsWithTag = [];
+  for (let i = 0; i < jsonObject.story.length; i++) {
+    const story = jsonObject.story[i];
+    for (let j = 0; j < story.text.length; j++) {
+      if(j > nowOrder && j < orderRange){
+        const text = story.text[j];
+        if (text.tag.includes(tagToFind)) {
+          objectsWithTag.push(text);
+        }
+      }
+    }
+  }
+  return objectsWithTag;
+}
+
+// json 파일에서 클릭한 문장의 같은 이야기의 다음 문장을 불러오는 코드
+function findNextStory(nowStoryOrder, nowOrder) {
+  const nextOrder = nowOrder + 1;
+  const nextStory = json.story[nowStoryOrder].text[nextOrder];
+
+  return nextStory;
+}
+console.log(findNextStory(0, 1).desc);
 
 //랜덤한 숫자를 반환하는 함수
 let previousNumber = null;
@@ -28,13 +79,16 @@ function wrapKeywordsWithATagAndStore(text, keywords) {
   
     keywords.forEach((keyword) => {
       if (text.includes(keyword)) {
-        const wrappedKeyword = `<a>${keyword}</a>`;
+        const wrappedKeyword = `<a class="click-tag">${keyword}</a>`;
         wrappedText = wrappedText.split(keyword).join(wrappedKeyword);
       }
     });
   
     return wrappedText;
 }
+
+// 다음 할 일. 
+// 자기 자신의 이야기 번호, 이야기 순서 확실하게, 시드를 따로 빼기.
 
 class StoryText {
   constructor(htmlOrderNum, textOrderNum) {
@@ -69,17 +123,34 @@ class StoryText {
   insertHtml(){
     myDiv.innerHTML = renderParagraphs(this.showText)
   }
+  clickTag(){
+    setClickTags(this.textOrderNum + 1, range);
+  }
+  clickNext(){
+    findNextStory(this.textOrderNum, 1).desc;
+  }
 }
 
 //0번째 이야기, 0번째 문장
 let firstStory = new StoryText(0, 0);
-firstStory.setSeed(0,2);
-firstStory.logTK();
+firstStory.setSeed(0,50);
+// firstStory.logTK();
 firstStory.insertHtml();
+firstStory.clickTag();
+
+// console.log(findObjectsWithTag(json, "할아버지"));
+// console.log(findObjectsWithTag(json, "돈"));
+// console.log(findObjectsWithTag(json, "나무꾼"));
+// console.log(findObjectsWithTag(json, "호랑이"));
+// console.log(findObjectsWithTag(json, "마을"));
+// console.log(findObjectsWithTag(json, "농부"));
+// console.log(findObjectsWithTag(json, "집"));
+// console.log(findObjectsWithTag(json, "도깨비"));
+// console.log(findObjectsWithTag(json, "어머니"));
+// console.log(findObjectsWithTag(json, "토끼"));
 
 // firstStory.disableHighlight();
 // firstStory.insertHtml();
-
 
 // let testText = wrapKeywordsWithATagAndStore("옛날에 호랑이와 고양이가 살았어요.", ["호랑이","고양이"])
 // console.log(testText)
